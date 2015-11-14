@@ -26,7 +26,10 @@ public class CompiLab2 {
         ArrayList<String> gram=new ArrayList<>();
          /*        para probar Factorizacion     */  
         //gram.add("E->ECHA|ECHE|ECHI|NOJODA");
-         gram.add("P->iEtS|iEtSeS|iEtSe|iE|a");
+        // gram.add("P->iEtS|iEtSeS|iEtSe|iE|a");
+        //gram.add("P->EiSt|EiStS|EiStSeS|a|Ei");
+        //gram.add("P->EiSt|EiStS|EiStSeS|a|Ei");
+        gram.add("P->Ei|Eia|Eib");
         //gram.add("E->E+E|E*E|i");
         //gram.add("S->iEtS|iEtSeS|a");
         
@@ -164,18 +167,90 @@ public class CompiLab2 {
         return gram;
     }
     public static ArrayList<String> factorize(ArrayList<String> grama){
-        String gem, nogem,prod, subprod,subgem, alfa, gamma;        
+        String gem, nogem, eval,compare, beta, alfa, gamma, element;        
         ArrayList<String> gram=(ArrayList<String>) grama.clone();
-        String[] subnogem;
+        String[] subnogem,prod;
         
         for (int h = 0; h < gram.size(); h++) {
-            prod=gram.get(h);
-            gem=prod.split("->")[0];
-            nogem=prod.split("->")[1]; 
+            gem=gram.get(h).split("->")[0];
+            nogem=gram.get(h).split("->")[1]; 
             
-            gram=factor(gram,gem,nogem);
+            //gram=factor(gram,gem,nogem);
+           // ArrayList<String> gram=(ArrayList<String>) gramatic.clone();
+            prod=nogem.split("\\|");
+            ArrayList<String> production=vectToArray(prod);
+            Stack<String> factor= new Stack<String>();
+            Stack<Integer> numFactor= new Stack<Integer>();
+            eval="";
+            compare=""; 
+            gamma="";
+            beta="";
+            int count=0, index=0;
+           // production.sort(null);
             
-            
+           // production=reverseArray(production);
+            production=sortByLength(production);
+            production=reverseArray(production);
+
+            for (int k = 0; k < production.size(); k++) {            
+                compare=production.get(k);
+                //System.out.println("Production : "+production);
+                //System.out.println("compare : "+compare);
+                for (int i = 0; i < compare.length(); i++) {
+                    eval=compare.substring(0,i+1);
+                    count=0;
+                    element="";
+                    for (int j = 0; j < production.size(); j++) {
+                        element=production.get(j);
+                        if (element.indexOf(eval)==0) { 
+                            count++;   
+                        }
+                    }
+                    if (count>1) {
+                        factor.push(eval);
+                        numFactor.push(count);
+                    }
+                }
+                if (!factor.isEmpty()) {
+                    System.out.println("Factor : "+factor.peek() );
+                    //System.out.println("NumFactor : "+numFactor.peek() );
+                    String f=factor.peek();
+                    //System.out.println("Se quita : "+gem+"->"+nogem);//+"   en : "+gram.indexOf(gem+"->"+nogem));
+                    index=gram.indexOf(gem+"->"+nogem);
+                    gram.remove(gem+"->"+nogem);
+                    beta="";
+                    gamma="";
+                    element="";
+                    for (int i=0; i<production.size(); i++) {
+                        element= production.get(i);
+                        if (element.indexOf(f)==0) { 
+                            alfa=element.replaceFirst(f, "");
+                            if (alfa.length()>0) {
+                                i--;
+                                production.remove(element);
+                                beta+=alfa+"|";
+                            }else{
+                                beta+="€ "; 
+                            }
+                        }else{
+                            gamma+="|"+element;
+                        }
+                    }
+
+                    gram.add(index,gem+"->"+f+gem+"'"+gamma);
+                    gram.add(index+1,gem+"'"+"->"+beta+"\b");
+
+                    gem=gram.get(h).split("->")[0];
+                    nogem=gram.get(h).split("->")[1]; 
+                    factor.clear();
+                    numFactor.clear();
+                    
+                    h--;
+                    k=production.size();
+                    
+                    showArray(gram, false);                    
+                }
+            }     
         }
               
         return gram;
