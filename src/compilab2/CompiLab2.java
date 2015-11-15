@@ -36,11 +36,21 @@ public class CompiLab2 {
         
         //gram.add("E->b");
         
-        gram.add("E->E+T|T");     
+        gram.add("E->STi"); 
+        gram.add("S->a|€"); 
+        gram.add("T->T+T|F"); 
+        //gram.add("T->F"); 
+        gram.add("F->i"); 
+        
+        /*gram.add("E->T|F");     
+        gram.add("T->a|€"); 
+        gram.add("F->b|id"); 
+        */
+        /*gram.add("E->E+E");     
         //gram.add("E->T+E|T");
         gram.add("T->T*F|F");
         gram.add("F->(E)|id");
-        
+      */
         
         /*ArrayList<String> sol=new ArrayList<>();
         sol.add("S->iEtSS'|a");
@@ -158,6 +168,9 @@ public class CompiLab2 {
                     }else{
                         beta+=p+gem+"'|";
                     }
+                }
+                if (subnogem.length==1) {
+                    beta=gem+"'|";
                 }
                 gram.remove(prod);                
                 gram.add(i,   gem+"->"+beta+"\b");               
@@ -317,7 +330,7 @@ public class CompiLab2 {
         String gem,nogem, production, t1;  
         String[] prod;
         ArrayList<String> first= new ArrayList<String>();
-        
+        int c=-1;
         for (String t : gram) {
             first.add("");
         }
@@ -326,20 +339,27 @@ public class CompiLab2 {
             production=gram.get(i);
             gem=production.split("->")[0]; 
             nogem=production.split("->")[1]; 
-            prod=nogem.split("\\| ");
+            prod=nogem.split("\\|");
             
             for (String t: prod) {
                 if (isTerminal(t.toCharArray())) {
                     first.set(i,first.get(i)+","+t.toCharArray()[0]);
-                    System.out.println("Se añadió "+t+ " a primero de "+gem);
+                    //System.out.println("Se añadió "+t+ " a primero de "+gem);
                 }else{
                     /*Añadir las los primeros de las no terminales que aparezcan al inicio  */
                     //indexOfGram(gram, t);
-                    first.set(i,first.get(i)+","+first.get(indexOfGram(gram, t)));
-                    System.out.println("Se añadió "+t+ " a primero de "+gem);
+                   // first.set(i,first.get(i)+","+first.get(indexOfGram(gram, t)+c));
+                   // System.out.println("Se añadió "+t+ " a primero de "+gem);  
+                    c=indexOfGram(gram, t)-1;
+                    do {  
+                        c++;
+                        first.set(i,first.get(i)+","+first.get(c));
+                       // System.out.println("Se añadió "+t+ " a primero de "+gem);                         
+                    } while (c< gram.size() && first.get(c).contains("€"));
                 }                
             }
         }
+        System.out.println("En Orden respextivo los primeros de cada");
         showArray(first,false);
         return null;
     }
@@ -403,14 +423,13 @@ public class CompiLab2 {
         while(t.substring(0, k).compareTo("'")==0){
             noTerm+="'";
         }
-        
         for (int i=0;i<gram.size();i++) { 
             production=gram.get(i);
             izq=production.split("->")[0]; 
             if (noTerm.compareTo(izq)==0){
-                System.out.println(" Dude: "+noTerm);
-                System.out.println(" finded: "+izq);
-                System.out.println(" produce: "+production.split("->")[1]);
+               // System.out.println(" Dude: "+noTerm);
+               // System.out.println(" finded: "+izq);
+               // System.out.println(" produce: "+production.split("->")[1]);
                 return i;
             }
         }
