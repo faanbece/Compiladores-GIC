@@ -29,17 +29,18 @@ public class CompiLab2 {
         // gram.add("P->iEtS|iEtSeS|iEtSe|iE|a");
         //gram.add("P->EiSt|EiStS|EiStSeS|a|Ei");
         //gram.add("P->EiSt|EiStS|EiStSeS|a|Ei");
-        gram.add("P->Ei|Eia|Eib");
+        //gram.add("P->Ei|Eia|Eiab|a|b|c");
+        //gram.add("P->Ei|Eia|Eib|Eiaa|Eiab|Eibc");
         //gram.add("E->E+E|E*E|i");
         //gram.add("S->iEtS|iEtSeS|a");
         
         //gram.add("E->b");
         
-        /*gram.add("E->E+T|T");     
+        gram.add("E->E+T|T");     
         //gram.add("E->T+E|T");
         gram.add("T->T*F|F");
         gram.add("F->(E)|id");
-        */
+        
         
         /*ArrayList<String> sol=new ArrayList<>();
         sol.add("S->iEtSS'|a");
@@ -83,8 +84,12 @@ public class CompiLab2 {
         showArray(gram,false);
 
         // noRecursive(gram);
+        
+        first(gram);
     }
-    
+     /*
+    ----------- 1º PUNTO, NO Recursiva y Factorizada  -------------------------
+    */
     public static void showArray(ArrayList<String> array, boolean oneLine){
         System.out.println("................");
         if (oneLine) {
@@ -149,11 +154,6 @@ public class CompiLab2 {
                 beta="";
                 for (String p : subnogem) {
                     if (p.indexOf(gem)==0 && (p.indexOf(gem+"'") != p.indexOf(gem))) { 
-                        /*
-                        //beta+=element.replaceFirst(f, "")+"|";//Para usar CON singos de agrupacion
-                        beta+=element.replaceFirst(f, "")+gem+"'|";//Para usar SIN singos de agrupacion
-                        */
-                        //p=p.replaceFirst(gem, "").replace(gem,gem+"'");                        
                         alfa+=p.replaceFirst(gem, "").replace(gem,gem+"'")+"|";                        
                     }else{
                         beta+=p+gem+"'|";
@@ -167,16 +167,12 @@ public class CompiLab2 {
         return gram;
     }
     public static ArrayList<String> factorize(ArrayList<String> grama){
-        String gem, nogem, eval,compare, beta, alfa, gamma, element;        
+        String gem, nogem, eval,compare, beta, alfa, gamma, element, exp="'";        
         ArrayList<String> gram=(ArrayList<String>) grama.clone();
-        String[] subnogem,prod;
-        
+        String[] prod;
         for (int h = 0; h < gram.size(); h++) {
             gem=gram.get(h).split("->")[0];
             nogem=gram.get(h).split("->")[1]; 
-            
-            //gram=factor(gram,gem,nogem);
-           // ArrayList<String> gram=(ArrayList<String>) gramatic.clone();
             prod=nogem.split("\\|");
             ArrayList<String> production=vectToArray(prod);
             Stack<String> factor= new Stack<String>();
@@ -186,16 +182,10 @@ public class CompiLab2 {
             gamma="";
             beta="";
             int count=0, index=0;
-           // production.sort(null);
-            
-           // production=reverseArray(production);
             production=sortByLength(production);
             production=reverseArray(production);
-
             for (int k = 0; k < production.size(); k++) {            
                 compare=production.get(k);
-                //System.out.println("Production : "+production);
-                //System.out.println("compare : "+compare);
                 for (int i = 0; i < compare.length(); i++) {
                     eval=compare.substring(0,i+1);
                     count=0;
@@ -213,9 +203,7 @@ public class CompiLab2 {
                 }
                 if (!factor.isEmpty()) {
                     System.out.println("Factor : "+factor.peek() );
-                    //System.out.println("NumFactor : "+numFactor.peek() );
                     String f=factor.peek();
-                    //System.out.println("Se quita : "+gem+"->"+nogem);//+"   en : "+gram.indexOf(gem+"->"+nogem));
                     index=gram.indexOf(gem+"->"+nogem);
                     gram.remove(gem+"->"+nogem);
                     beta="";
@@ -236,23 +224,21 @@ public class CompiLab2 {
                             gamma+="|"+element;
                         }
                     }
-
-                    gram.add(index,gem+"->"+f+gem+"'"+gamma);
-                    gram.add(index+1,gem+"'"+"->"+beta+"\b");
-
+                    gram.add(index,gem+"->"+f+gem+exp+gamma);
+                    gram.add(index+1,gem+exp+"->"+beta+"\b");
                     gem=gram.get(h).split("->")[0];
                     nogem=gram.get(h).split("->")[1]; 
                     factor.clear();
                     numFactor.clear();
-                    
+                    exp+="'";
                     h--;
-                    k=production.size();
-                    
+                    k=production.size(); 
                     showArray(gram, false);                    
+                }else{
+                    exp="'";
                 }
             }     
         }
-              
         return gram;
     }  
     public static ArrayList<String> factor(ArrayList<String> gramatic,String gem,String nogem){
@@ -266,11 +252,7 @@ public class CompiLab2 {
         production.sort(null);
         production=reverseArray(production);
         production=sortByLength(production);
-        production=reverseArray(production);
-        
-        
-        
-        
+        production=reverseArray(production);        
         for (int k = 0; k < production.size(); k++) {            
             compare=production.get(k);
             //System.out.println("Production : "+production);
@@ -327,8 +309,42 @@ public class CompiLab2 {
         }       
         return gram;
     }
+     /*
+    ----------- 2º PUNTO, PRIMEROS Y SIGUIENTES  -------------------------
+    */
+    
+    public static ArrayList<String> first(ArrayList<String> gram){
+        String gem,nogem, production, t1;  
+        String[] prod;
+        ArrayList<String> first= new ArrayList<String>();
+        
+        for (String t : gram) {
+            first.add("");
+        }
+        
+        for (int i=gram.size()-1; i>=0; i--) {
+            production=gram.get(i);
+            gem=production.split("->")[0]; 
+            nogem=production.split("->")[1]; 
+            prod=nogem.split("\\| ");
+            
+            for (String t: prod) {
+                if (isTerminal(t.toCharArray())) {
+                    first.set(i,first.get(i)+","+t.toCharArray()[0]);
+                    System.out.println("Se añadió "+t+ " a primero de "+gem);
+                }else{
+                    /*Añadir las los primeros de las no terminales que aparezcan al inicio  */
+                    //indexOfGram(gram, t);
+                    first.set(i,first.get(i)+","+first.get(indexOfGram(gram, t)));
+                    System.out.println("Se añadió "+t+ " a primero de "+gem);
+                }                
+            }
+        }
+        showArray(first,false);
+        return null;
+    }
     /*
-    ----------- ZONA DE ALTA EMPANADA  -------------------------
+    ----------- EMPANADAS DE APOYO  -------------------------
     */
     public static ArrayList<String> sortByLength(ArrayList<String> ToSort){
          ArrayList<String> toSort=(ArrayList<String>) ToSort.clone();
@@ -364,4 +380,41 @@ public class CompiLab2 {
         }
         return dest.toString();
     }
+    
+    public static boolean isTerminal(char[] dude){
+        
+        if ((int)dude[0]>=65 && (int)dude[0]<=90) {
+            return false;
+        }
+        return true;
+        /*
+        65 = A
+        90 = Z
+        
+        97 = a
+        122 = z
+        */
+    }
+    
+    public static int indexOfGram(ArrayList<String> gram, String t){
+        String izq,production,noTerm=t.toCharArray()[0]+"";  
+        ArrayList<String> first= new ArrayList<String>();
+        int k=1;
+        while(t.substring(0, k).compareTo("'")==0){
+            noTerm+="'";
+        }
+        
+        for (int i=0;i<gram.size();i++) { 
+            production=gram.get(i);
+            izq=production.split("->")[0]; 
+            if (noTerm.compareTo(izq)==0){
+                System.out.println(" Dude: "+noTerm);
+                System.out.println(" finded: "+izq);
+                System.out.println(" produce: "+production.split("->")[1]);
+                return i;
+            }
+        }
+        return -1;
+    }
+   
 }
